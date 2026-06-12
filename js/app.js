@@ -449,8 +449,9 @@ renderers.home = function () {
         <div class="mt-sub">${reviewN} missed question${reviewN === 1 ? '' : 's'} to clear</div></button>` : ''}
       <button class="mode-tile" data-go="play" data-mode="lightning"><span class="mt-ico">⚡</span><div class="mt-name">Lightning</div><div class="mt-sub">60 seconds. Go.</div></button>
       <button class="mode-tile" data-go="play" data-mode="survival"><span class="mt-ico">🛡️</span><div class="mt-name">Survival</div><div class="mt-sub">3 lives. Rising difficulty.</div></button>
-      <button class="mode-tile" data-go="play" data-mode="bettercall"><span class="mt-ico">🤙</span><div class="mt-name">Better Call</div><div class="mt-sub">Both look right. Pick the better.</div></button>
+      <button class="mode-tile" data-go="play" data-mode="bettercall"><span class="mt-ico">🤙</span><div class="mt-name">Better Call</div><div class="mt-sub">3 choices, real-exam style. Pick the better.</div></button>
       <button class="mode-tile" data-go="termmatch"><span class="mt-ico">🧩</span><div class="mt-name">Term Match</div><div class="mt-sub">Match terms to definitions</div></button>
+      <button class="mode-tile" data-go="fieldnotes"><span class="mt-ico">📋</span><div class="mt-name">Field Notes</div><div class="mt-sub">Intel from people who passed</div></button>
     </div>`;
 
   v.querySelectorAll('[data-claim]').forEach(b => b.onclick = () => claimQuest(+b.dataset.claim));
@@ -686,7 +687,7 @@ renderers.arcade = function () {
     <div class="card tappable arcade-tile" data-mode="bettercall">
       <div class="arcade-ico a3">🤙</div>
       <div class="arcade-mid"><div class="arcade-name">Better Call</div>
-      <div class="arcade-sub">Two answers — both sound right. Pick the BETTER one. This is the real exam skill.</div>
+      <div class="arcade-sub">Three choices, just like the real exam — one clearly wrong, two with a grain of truth. Pick the BETTER one.</div>
       <div class="arcade-best">Best: ${a.bettercall.best}/10 · ${a.bettercall.plays} plays</div></div></div>
     <div class="card tappable arcade-tile" data-mode="termmatch">
       <div class="arcade-ico a4">🧩</div>
@@ -694,6 +695,10 @@ renderers.arcade = function () {
       <div class="arcade-sub">Match glossary terms to definitions against the clock.</div>
       <div class="arcade-best">${a.termmatch.bestMs ? 'Best: ' + (a.termmatch.bestMs / 1000).toFixed(1) + 's' : 'No wins yet'} · ${a.termmatch.wins} wins</div></div></div>
     <div class="section-title">📖 Reference</div>
+    <div class="card tappable arcade-tile" data-mode="fieldnotes">
+      <div class="arcade-ico a2">📋</div>
+      <div class="arcade-mid"><div class="arcade-name">Field Notes</div>
+      <div class="arcade-sub">Real-exam intel from people who passed: format, question style, hot topics, test-day checklist.</div></div></div>
     <div class="card tappable arcade-tile" data-mode="glossary">
       <div class="arcade-ico a4">📚</div>
       <div class="arcade-mid"><div class="arcade-name">Glossary & Deadlines</div>
@@ -701,8 +706,7 @@ renderers.arcade = function () {
   v.querySelectorAll('[data-mode]').forEach(el => el.onclick = () => {
     beep('click');
     const m = el.dataset.mode;
-    if (m === 'termmatch') navigate('termmatch');
-    else if (m === 'glossary') navigate('glossary');
+    if (m === 'termmatch' || m === 'glossary' || m === 'fieldnotes') navigate(m);
     else startPlay(m);
   });
 };
@@ -777,9 +781,9 @@ function renderPlayQuestion() {
   const q = play.q;
   let options;
   if (play.mode === 'bettercall') {
-    const wrongIdxs = q.options.map((_, i) => i).filter(i => i !== q.correctAnswer);
-    const distractor = wrongIdxs[Math.floor(Math.random() * wrongIdxs.length)];
-    options = shuffle([q.correctAnswer, distractor]);
+    // real-exam format: 3 choices — the correct answer + 2 random distractors
+    const wrongIdxs = shuffle(q.options.map((_, i) => i).filter(i => i !== q.correctAnswer));
+    options = shuffle([q.correctAnswer, ...wrongIdxs.slice(0, 2)]);
   } else {
     options = q.options.map((_, i) => i);
   }
@@ -1066,6 +1070,80 @@ renderers.glossary = function () {
   render();
   $('#glBack').onclick = () => navigate('arcade');
   $('#glSearch').oninput = e => render(e.target.value);
+};
+
+/* ============================================================
+   VIEW: FIELD NOTES — intel from people who passed
+   ============================================================ */
+const FIELD_NOTES = [
+  {
+    emoji: '🎯', title: 'The Real Exam',
+    items: [
+      '100 questions in a single 2-hour sitting. 77 correct = "Pass CA."',
+      'Only THREE answer choices (A/B/C) — not four.',
+      'The PSI software gives you cross-out, flag-for-review, and per-question notes. Use all three.',
+      'Results post roughly every two weeks. Take it Wednesday, you might know Friday.',
+      'Most passers finish in 30–60 minutes, then use the rest to review flagged questions.'
+    ]
+  },
+  {
+    emoji: '🧠', title: 'How the Questions Think',
+    items: [
+      'About 2/3 are "most-correct" questions: one obviously wrong answer, two that each hold a grain of truth.',
+      'Tie-breaker #1: which step happens FIRST? (Assess before act. Meet the person before the logistics.)',
+      'Tie-breaker #2: does one answer ENCOMPASS the other?',
+      'Track WHO you represent — an SNT trustee\'s duty runs to the beneficiary, not the relative asking.',
+      'One or two words in the stem can flip the answer. Read twice.',
+      'Nobody asks for code section numbers. Ever. Know the substance.',
+      'It\'s scenarios all the way down — "lots of Sally and Fred."'
+    ]
+  },
+  {
+    emoji: '🔥', title: 'Hot Topics (per recent passers)',
+    items: [
+      'Every test asks it: 15 hours of continuing education per year.',
+      'Substituted judgment, supported decision-making, and moving/relocating a client "featured heavily."',
+      'Liabilities: where they go on an accounting, and what to do when liabilities exceed assets.',
+      'More conservatorship questions than people expect; very little Medicare detail.',
+      'Roughly half the exam draws on NGA Standards and Ethics. Know them cold.',
+      'License renewal = annual statement. Functional assessment before any move. SNT before a family gift.'
+    ]
+  },
+  {
+    emoji: '🧳', title: 'Test Day Checklist',
+    items: [
+      'Everything goes in a locker: no phone, no bracelets, nothing in top pockets.',
+      'Sweater or hoodie must have NO pockets — or you\'re testing in your t-shirt. Rooms run cold.',
+      'Your ID must match your registration name exactly. No nicknames.',
+      'Headphones/earplugs are offered — take them if quiet helps you.',
+      'Hydrate and hit the restroom first; it\'s up to two hours dialed in.',
+      'On the second pass, re-read your flagged notes and ask: do I still agree with my first instinct?'
+    ]
+  },
+  {
+    emoji: '⚖️', title: 'The Golden Rules',
+    items: [
+      'When two answers both look right, pick the one in the BEST INTEREST of the conservatee.',
+      'Favor the person\'s autonomy — the answer giving the most self-determination usually wins.',
+      'The fiduciary never plays doctor or lawyer. Clinical and legal calls belong to professionals.',
+      'Don\'t overthink: take the question at face value. The traps are in careful reading, not wordplay.'
+    ]
+  }
+];
+renderers.fieldnotes = function () {
+  const v = $('#view-fieldnotes');
+  v.innerHTML = `
+    <div class="play-head">
+      <button class="back icon-btn" id="fnBack">✕</button>
+      <div class="play-title">📋 Field Notes</div>
+    </div>
+    <div class="section-sub">Intel from the Fiduciary Newbies who already passed (2025–2026 cohort). This is the stuff the books don't tell you.</div>
+    ${FIELD_NOTES.map(s => `
+      <div class="section-title">${s.emoji} ${esc(s.title)}</div>
+      ${s.items.map(i => `<div class="card gloss-item"><div class="gloss-def" style="color:var(--txt)">${esc(i)}</div></div>`).join('')}
+    `).join('')}
+    <div class="section-sub" style="text-align:center; margin-top:16px">Compiled June 2026 · sourced from real exam debriefs</div>`;
+  $('#fnBack').onclick = () => navigate('arcade');
 };
 
 /* ============================================================
