@@ -43,7 +43,15 @@ const SPLASH_TIPS = [
   'Two answers will look right. One is better. Train that instinct.',
   'No question asks for code section numbers — know the substance.',
   'Inventory & Appraisal: due 90 days after appointment.',
-  'Substituted judgment first, best interest standard second.'
+  'Substituted judgment first, best interest standard second.',
+  'Recent takers report: 100 questions, 2 hours, 77 correct to pass.',
+  'The real exam gives 3 answer choices — and two often "hold a grain of truth."',
+  'Tie-breaker: which step happens FIRST? Does one answer encompass the other?',
+  'Watch WHO you represent in each scenario — the trustee serves the beneficiary.',
+  'Every test asks it: 15 hours of continuing education each year.',
+  'Per passers: substituted judgment, supported decision-making, and relocating a client feature heavily.',
+  'Assess before you act: functional assessment comes before any move.',
+  'A fiduciary never makes clinical calls — medication decisions belong to medical professionals.'
 ];
 
 /* ---------------- Globals ---------------- */
