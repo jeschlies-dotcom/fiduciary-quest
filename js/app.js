@@ -560,7 +560,7 @@ renderers.case = function () {
     <div class="q-meta"><span class="chip dom">${DOMAINS[st.domain] ? DOMAINS[st.domain].emoji : '📌'} ${esc(st.subtopic)}</span><span class="chip">Chapter ${p.stage + 1}/${c.stages.length}</span></div>
     <div class="prompt-q">${esc(st.prompt)}</div>
     <div id="caseOpts">${opts.map((x, k) =>
-      `<button class="opt" data-oi="${x.i}"><span class="opt-key">${'ABCD'[k]}</span>${esc(x.o.text)}</button>`).join('')}</div>
+      `<button class="opt" data-oi="${x.i}"><span class="opt-key">${'ABC'[k]}</span>${esc(x.o.text)}</button>`).join('')}</div>
     <div id="caseVerdict"></div>`;
 
   $('#caseBack').onclick = () => { beep('click'); navigate('cases'); };
@@ -803,7 +803,7 @@ function renderPlayQuestion() {
     </div>
     <div class="q-text">${esc(q.question)}</div>
     <div id="playOpts">${options.map((oi, k) =>
-      `<button class="opt" data-oi="${oi}"><span class="opt-key">${'ABCD'[k]}</span>${esc(q.options[oi])}</button>`).join('')}</div>
+      `<button class="opt" data-oi="${oi}"><span class="opt-key">${'ABC'[k]}</span>${esc(q.options[oi])}</button>`).join('')}</div>
     <div id="playFeedback"></div>`;
 
   $('#playQuit').onclick = () => { beep('click'); endPlay(true); };
