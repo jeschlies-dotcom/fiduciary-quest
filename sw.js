@@ -18,10 +18,12 @@ self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
   if (e.request.method !== 'GET' || url.origin !== location.origin) return;
 
-  // data files: network first (pick up new questions/cases), fall back to cache
+  // data files: network first (pick up new questions/cases), fall back to cache.
+  // cache:'no-cache' forces revalidation with the server — the browser's heuristic
+  // HTTP cache otherwise keeps serving a stale question bank after updates.
   if (url.pathname.includes('/data/')) {
     e.respondWith(
-      fetch(e.request).then(res => {
+      fetch(e.request, { cache: 'no-cache' }).then(res => {
         const copy = res.clone();
         caches.open(CACHE).then(c => c.put(e.request, copy));
         return res;
@@ -31,7 +33,7 @@ self.addEventListener('fetch', e => {
   }
   // shell: network first so updates land immediately, cache fallback for offline
   e.respondWith(
-    fetch(e.request).then(res => {
+    fetch(e.request, { cache: 'no-cache' }).then(res => {
       const copy = res.clone();
       caches.open(CACHE).then(c => c.put(e.request, copy));
       return res;

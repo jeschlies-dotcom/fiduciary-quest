@@ -228,8 +228,18 @@ function pickQuestions(n, opts = {}) {
     const w = domW * (1 + 2 * wrongRate) * recency * (0.6 + Math.random());
     return { q, w };
   });
-  weighted.sort((a, b) => b.w - a.w);
-  return shuffle(weighted.slice(0, Math.min(n * 2, weighted.length))).slice(0, n).map(x => x.q);
+  // Weighted sampling WITHOUT replacement: exam weight biases the draw but never
+  // locks the order (a plain sort made heavy domains like Financial always come first).
+  const out = [];
+  const cand = weighted.slice();
+  while (out.length < n && cand.length) {
+    let total = 0;
+    for (const c of cand) total += c.w;
+    let r = Math.random() * total, k = 0;
+    while (k < cand.length - 1 && (r -= cand[k].w) > 0) k++;
+    out.push(cand.splice(k, 1)[0].q);
+  }
+  return out;
 }
 
 /* ---------------- Daily quests ---------------- */
@@ -263,7 +273,7 @@ function questEvent(id, inc) {
     if (q.id === 'correct_streak') { const np = Math.min(Math.max(q.prog, correctRun), q.target); if (np !== q.prog) { q.prog = np; touched = true; } }
     else if (q.id === id && inc) { q.prog = Math.min(q.prog + inc, q.target); touched = true; }
   });
-  if (touched && activeView === 'home') renderHome();
+  if (touched && activeView === 'home') renderers.home();
 }
 function claimQuest(idx) {
   const q = S.dailies.quests[idx];
@@ -271,7 +281,7 @@ function claimQuest(idx) {
   q.claimed = true;
   beep('best');
   addXp(30, 'Daily quest');
-  renderHome();
+  renderers.home();
 }
 
 /* ---------------- Achievements ---------------- */
@@ -716,34 +726,72 @@ renderers.arcade = function () {
    ============================================================ */
 let play = null;
 
-function startPlay(mode) {
+function startPlay(mode, domains) {
   const titles = { lightning: '⚡ Lightning', survival: '🛡️ Survival', bettercall: '🤙 Better Call', review: '♻️ Redemption' };
+  if (mode === 'review' && !reviewPool().length) {
+    toast('Nothing to review — go miss some questions first 😄');
+    return;
+  }
+  if ((mode === 'lightning' || mode === 'survival' || mode === 'bettercall') && domains === undefined) {
+    play = { picker: true, mode, title: titles[mode] };
+    navigate('play');
+    return;
+  }
   play = {
-    mode, title: titles[mode], score: 0, streak: 0, bestStreak: 0, lives: 3,
+    mode, title: titles[mode], domains: domains || null, score: 0, streak: 0, bestStreak: 0, lives: 3,
     idx: 0, total: 0, timeLeft: 60, answered: 0, correct: 0, done: false, q: null, used: new Set()
   };
   if (mode === 'bettercall') play.total = 10;
   if (mode === 'review') {
     play.queue = shuffle(reviewPool()).slice(0, 10);
     play.total = play.queue.length;
-    if (!play.total) { toast('Nothing to review — go miss some questions first 😄'); return; }
   }
   navigate('play');
+}
+
+function renderDomainPicker() {
+  const v = $('#view-play');
+  const mode = play.mode, title = play.title;
+  const tiles = [null, ...Object.keys(DOMAINS).map(Number)].map(d => {
+    const n = d ? QUESTIONS.filter(q => q.domain === d).length : QUESTIONS.length;
+    const ico = d ? DOMAINS[d].emoji : '🌐';
+    const name = d ? DOMAINS[d].short : 'All Domains';
+    return `<button class="mode-tile" data-dom="${d || ''}">
+      <span class="mt-ico">${ico}</span>
+      <div class="mt-name">${esc(name)}</div>
+      <div class="mt-sub">${n} question${n === 1 ? '' : 's'}</div>
+    </button>`;
+  }).join('');
+  v.innerHTML = `
+    <div class="play-head">
+      <button class="back icon-btn" id="playQuit">✕</button>
+      <div class="play-title">${title}</div>
+    </div>
+    <div class="section-title">Pick your battlefield</div>
+    <div class="section-sub">All domains uses exam weighting. Or drill one category.</div>
+    <div class="home-grid">${tiles}</div>`;
+  $('#playQuit').onclick = () => { beep('click'); navigate('arcade'); };
+  v.querySelectorAll('[data-dom]').forEach(b => b.onclick = () => {
+    beep('click');
+    const d = b.dataset.dom;
+    startPlay(mode, d ? [+d] : null);
+  });
 }
 
 function nextPlayQuestion() {
   const m = play.mode;
   let q = null;
+  const doms = play.domains;
   if (m === 'review') q = play.queue[play.idx];
   else if (m === 'survival') {
     const diff = play.answered < 5 ? 'easy' : play.answered < 12 ? 'medium' : 'hard';
-    let cands = pickQuestions(6, { difficulty: diff }).filter(x => !play.used.has(x.id));
-    if (!cands.length) cands = pickQuestions(6).filter(x => !play.used.has(x.id));
-    if (!cands.length) { play.used.clear(); cands = pickQuestions(6); }
+    let cands = pickQuestions(6, { difficulty: diff, domains: doms }).filter(x => !play.used.has(x.id));
+    if (!cands.length) cands = pickQuestions(6, { domains: doms }).filter(x => !play.used.has(x.id));
+    if (!cands.length) { play.used.clear(); cands = pickQuestions(6, { domains: doms }); }
     q = cands[0];
   } else {
-    let cands = pickQuestions(6).filter(x => !play.used.has(x.id));
-    if (!cands.length) { play.used.clear(); cands = pickQuestions(6); }
+    let cands = pickQuestions(6, { domains: doms }).filter(x => !play.used.has(x.id));
+    if (!cands.length) { play.used.clear(); cands = pickQuestions(6, { domains: doms }); }
     q = cands[0];
   }
   if (!q) { endPlay(); return; }
@@ -754,6 +802,7 @@ function nextPlayQuestion() {
 
 renderers.play = function () {
   if (!play) { navigate('home'); return; }
+  if (play.picker) { renderDomainPicker(); return; }
   if (play.mode === 'lightning') {
     const iv = setInterval(() => {
       if (!play || play.done) { clearInterval(iv); return; }
@@ -900,12 +949,16 @@ function endPlay(quit = false) {
       ${newBest ? '<div class="newbest">★ NEW PERSONAL BEST ★</div>' : ''}
       <div style="display:flex; gap:10px; justify-content:center; margin-top:20px; flex-wrap:wrap">
         <button class="btn btn-ghost" id="resHome">Home</button>
-        <button class="btn btn-primary" id="resAgain">Play Again</button>
+        ${m === 'review' && !reviewPool().length
+          ? '<div class="result-line" style="width:100%">🎉 All missed questions redeemed!</div>'
+          : '<button class="btn btn-primary" id="resAgain">Play Again</button>'}
       </div>
     </div>`;
   if (newBest) confettiBurst();
+  const doms = play.domains;
   $('#resHome').onclick = () => { beep('click'); navigate('home'); };
-  $('#resAgain').onclick = () => { beep('click'); startPlay(m); };
+  const again = $('#resAgain');
+  if (again) again.onclick = () => { beep('click'); startPlay(m, m === 'review' ? undefined : doms); };
 }
 
 /* ============================================================
