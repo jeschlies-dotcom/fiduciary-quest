@@ -422,3 +422,35 @@ input:focus, select:focus { outline: 2px solid var(--purp); border-color: transp
   .tm-grid { grid-template-columns: repeat(4, 1fr); }
   #views { padding-left: 24px; padding-right: 24px; }
 }
+
+/* ---------------- Final Boss (exam simulator) ---------------- */
+.mode-tile.boss { border-color: rgba(248,113,113,.45); background: linear-gradient(135deg, #3a1226 0%, #1b2147 65%); }
+.boss-tile { border-color: rgba(248,113,113,.35); }
+.boss-intro { text-align: center; padding: 20px 16px; }
+.boss-intro .boss-emoji { font-size: 54px; margin: 4px 0 8px; }
+.boss-rules { text-align: left; margin: 14px auto; max-width: 440px; display: grid; gap: 8px; }
+.boss-rule { background: var(--bg1); border: 1px solid var(--line); border-radius: 10px; padding: 9px 12px; font-size: .87rem; line-height: 1.45; }
+.exam-sub { display: flex; gap: 8px; align-items: center; margin: 10px 0 14px; flex-wrap: wrap; }
+.chip-btn { cursor: pointer; font-family: inherit; }
+.chip-btn.flag-on { border-color: var(--gold); color: var(--gold); }
+.exam-opt { position: relative; padding-right: 44px; }
+.exam-opt.selected { border-color: var(--purp); background: rgba(139,124,246,.16); }
+.exam-opt.struck { opacity: .45; text-decoration: line-through; }
+.exam-opt .strike-btn { position: absolute; top: 50%; right: 6px; transform: translateY(-50%); font-size: .82rem; opacity: .45; padding: 8px; text-decoration: none; }
+.exam-opt .strike-btn:hover { opacity: 1; }
+.exam-nav-row { display: flex; gap: 10px; justify-content: space-between; margin-top: 16px; }
+.enav-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 5px; margin: 12px 0 16px; }
+.enav-cell { aspect-ratio: 1; border-radius: 8px; border: 1px solid var(--line); background: var(--card); color: var(--mut); font-weight: 700; font-size: .66rem; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; font-family: inherit; }
+.enav-cell.answered { background: rgba(139,124,246,.28); border-color: var(--purp); color: var(--txt); }
+.enav-cell.flagged { border-color: var(--gold); }
+.enav-cell.cur { outline: 2px solid var(--blue); }
+.boss-verdict { font-weight: 900; font-size: 1.2rem; margin: 6px 0; }
+.boss-verdict.pass { color: var(--good); }
+.boss-verdict.fail { color: var(--bad); }
+.exam-dom-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; font-weight: 700; font-size: .92rem; }
+.exam-dom-row .good { color: var(--good); }
+.exam-dom-row .bad { color: var(--bad); }
+.exam-miss { padding: 14px; }
+.exam-miss .miss-row { font-size: .84rem; margin-top: 8px; line-height: 1.45; }
+.exam-miss .miss-row.bad { color: var(--bad); }
+.exam-miss .miss-row.good { color: var(--good); }

@@ -108,6 +108,7 @@ function defaultState() {
     qstats: {},          // qid -> {s:seen, c:correct, w:wrong, last:ts, lw:lastWrong(bool)}
     cases: {},           // caseId -> {stage, picks:[], rep, risk, done, bestGrade, flawless}
     arcade: { lightning: { best: 0, plays: 0 }, survival: { best: 0, plays: 0 }, bettercall: { best: 0, plays: 0 }, termmatch: { bestMs: 0, wins: 0 } },
+    boss: { attempts: 0, best: 0, passed: false, run: null },
     dailies: { date: '', quests: [] },
     ach: {},             // achId -> ts
     counters: { correct: 0, wrong: 0, d6correct: 0, reviewCleared: 0, stagesDone: 0 },
@@ -306,7 +307,10 @@ const ACH = [
   { id: 'redeemer', ico: '♻️', name: 'The Redeemer', desc: 'Clear 25 previously-missed questions', check: () => S.counters.reviewCleared >= 25 },
   { id: 'gold_d6', ico: '🥇', name: 'Money Master', desc: 'Gold medal in Financial Management', check: () => medalTier(6) >= 3 },
   { id: 'platinum_any', ico: '💎', name: 'Platinum Standard', desc: 'Platinum medal in any domain', check: () => Object.keys(DOMAINS).some(d => medalTier(+d) >= 4) },
-  { id: 'all_gold', ico: '🏅', name: 'Heptathlete', desc: 'Gold or better in all 7 domains', check: () => Object.keys(DOMAINS).every(d => medalTier(+d) >= 3) }
+  { id: 'all_gold', ico: '🏅', name: 'Heptathlete', desc: 'Gold or better in all 7 domains', check: () => Object.keys(DOMAINS).every(d => medalTier(+d) >= 3) },
+  { id: 'boss_attempt', ico: '🐉', name: 'Into the Dragon’s Den', desc: 'Face the Final Boss', check: () => S.boss.attempts >= 1 },
+  { id: 'boss_pass', ico: '👑', name: 'Boss Slayer', desc: 'Pass the Final Boss (77+)', check: () => S.boss.best >= 77 },
+  { id: 'boss_ace', ico: '🔱', name: 'Overkill', desc: 'Score 90+ on the Final Boss', check: () => S.boss.best >= 90 }
 ];
 let achQueue = [];
 function checkAchievements() {
@@ -454,6 +458,9 @@ renderers.home = function () {
         <div class="mt-name">Open a Case File</div>
         <div class="mt-sub">Multi-chapter client stories. Every decision counts.</div>
       </button>`}
+      <button class="mode-tile boss" data-go="exam">
+        <span class="mt-ico">🐉</span><div class="mt-name">${S.boss.run ? 'Resume the Final Boss' : 'The Final Boss'}</div>
+        <div class="mt-sub">${S.boss.run ? 'The clock is still running…' : '100 questions · 2 hours · 77 to pass'}</div></button>
       ${reviewN ? `<button class="mode-tile" data-go="play" data-mode="review">
         <span class="mt-ico">♻️</span><div class="mt-name">Redemption</div>
         <div class="mt-sub">${reviewN} missed question${reviewN === 1 ? '' : 's'} to clear</div></button>` : ''}
@@ -704,6 +711,12 @@ renderers.arcade = function () {
       <div class="arcade-mid"><div class="arcade-name">Term Match</div>
       <div class="arcade-sub">Match glossary terms to definitions against the clock.</div>
       <div class="arcade-best">${a.termmatch.bestMs ? 'Best: ' + (a.termmatch.bestMs / 1000).toFixed(1) + 's' : 'No wins yet'} · ${a.termmatch.wins} wins</div></div></div>
+    <div class="section-title">🐉 The Boss Room</div>
+    <div class="card tappable arcade-tile boss-tile" data-mode="exam">
+      <div class="arcade-ico a1">🐉</div>
+      <div class="arcade-mid"><div class="arcade-name">The Final Boss</div>
+      <div class="arcade-sub">The real exam, simulated: 100 questions to exam weights, 2 hours, 77 to pass. Flag, strike out, jump around — no feedback until the verdict.</div>
+      <div class="arcade-best">${S.boss.run ? '⏳ Fight in progress — clock is running' : S.boss.attempts ? `Attempts: ${S.boss.attempts} · Best: ${S.boss.best}/100${S.boss.passed ? ' · 👑 SLAIN' : ''}` : 'Never attempted'}</div></div></div>
     <div class="section-title">📖 Reference</div>
     <div class="card tappable arcade-tile" data-mode="fieldnotes">
       <div class="arcade-ico a2">📋</div>
@@ -716,7 +729,7 @@ renderers.arcade = function () {
   v.querySelectorAll('[data-mode]').forEach(el => el.onclick = () => {
     beep('click');
     const m = el.dataset.mode;
-    if (m === 'termmatch' || m === 'glossary' || m === 'fieldnotes') navigate(m);
+    if (m === 'termmatch' || m === 'glossary' || m === 'fieldnotes' || m === 'exam') navigate(m);
     else startPlay(m);
   });
 };
@@ -1032,6 +1045,229 @@ renderers.termmatch = function () {
     }
   });
 };
+
+/* ============================================================
+   VIEW: EXAM — 🐉 The Final Boss (full exam simulator)
+   100 questions to exam weights / 120 min / 77 to pass, per
+   2025–2026 passer intel. No feedback until submission.
+   ============================================================ */
+const EXAM_BLUEPRINT = { 1: 17, 2: 13, 3: 11, 4: 14, 5: 9, 6: 29, 7: 7 }; // sums to 100
+const EXAM_MIN = 120;
+const EXAM_PASS = 77;
+const qById = id => QUESTIONS.find(q => q.id === id);
+
+function newBossRun() {
+  const ids = shuffle(Object.entries(EXAM_BLUEPRINT).flatMap(([d, n]) =>
+    shuffle(QUESTIONS.filter(q => q.domain === +d)).slice(0, n).map(q => q.id)));
+  return {
+    qids: ids,
+    optOrder: ids.map(id => shuffle(qById(id).options.map((_, i) => i))),
+    answers: ids.map(() => null),
+    flags: ids.map(() => false),
+    struck: ids.map(() => []),
+    start: Date.now(),
+    idx: 0
+  };
+}
+function examTimeLeft() { return Math.max(0, S.boss.run.start + EXAM_MIN * 60000 - Date.now()); }
+function fmtClock(ms) { const s = Math.ceil(ms / 1000); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
+
+renderers.exam = function () {
+  // stale run whose questions no longer exist in the bank → discard
+  if (S.boss.run && S.boss.run.qids.some(id => !qById(id))) { S.boss.run = null; saveState(); }
+  if (!S.boss.run) { renderExamIntro(); return; }
+  if (examTimeLeft() <= 0) { finishExam(true); return; }
+  // one clock per visit to this view; question navigation re-renders content only
+  const warned = new Set();
+  [30, 10, 5].forEach(m => { if (examTimeLeft() < m * 60000) warned.add(m); });
+  const iv = setInterval(() => {
+    if (!S.boss.run) { clearInterval(iv); return; }
+    const left = examTimeLeft();
+    const el = $('#examTimer');
+    if (el) { el.textContent = fmtClock(left); el.classList.toggle('time-low', left < 10 * 60000); }
+    [30, 10, 5].forEach(m => { if (left < m * 60000 && !warned.has(m)) { warned.add(m); toast(`⏳ ${m} minutes left`, 'warn'); } });
+    if (left <= 0) { clearInterval(iv); finishExam(true); }
+  }, 1000);
+  cleanupFns.push(() => clearInterval(iv));
+  renderExamQuestion();
+};
+
+function renderExamIntro() {
+  const v = $('#view-exam');
+  const b = S.boss;
+  v.innerHTML = `
+    <div class="play-head">
+      <button class="back icon-btn" id="examBack">✕</button>
+      <div class="play-title">🐉 The Final Boss</div>
+    </div>
+    <div class="card boss-intro">
+      <div class="boss-emoji">🐉</div>
+      <div class="section-title" style="text-align:center; margin-top:0">The PSI Testing Center Awaits</div>
+      <div class="boss-rules">
+        <div class="boss-rule">📝 <b>100 questions</b> drawn to real exam weights — Financial is ~30%, just like test day</div>
+        <div class="boss-rule">⏱️ <b>2 hours</b> on the clock. It keeps running even if you close the app.</div>
+        <div class="boss-rule">🎯 <b>77 correct</b> to pass — the real bar</div>
+        <div class="boss-rule">🚩 Flag questions, ✂️ strike out answers, 🗺️ jump anywhere — PSI style</div>
+        <div class="boss-rule">🙈 No feedback until the verdict. Explanations for every miss afterward.</div>
+      </div>
+      ${b.attempts ? `<div class="section-sub" style="text-align:center">Attempts: ${b.attempts} · Best: ${b.best}/100${b.passed ? ' · 👑 SLAIN' : ''}</div>` : ''}
+      <button class="btn btn-primary btn-big" id="examBegin">⚔️ Face the Boss</button>
+    </div>`;
+  $('#examBack').onclick = () => { beep('click'); navigate('arcade'); };
+  $('#examBegin').onclick = () => {
+    beep('click');
+    S.boss.run = newBossRun();
+    saveState();
+    renderers.exam();
+  };
+}
+
+function renderExamQuestion() {
+  const v = $('#view-exam');
+  const run = S.boss.run;
+  const i = run.idx;
+  const q = qById(run.qids[i]);
+  const order = run.optOrder[i];
+  const answered = run.answers.filter(a => a !== null).length;
+  const last = i === run.qids.length - 1;
+  v.innerHTML = `
+    <div class="play-head">
+      <button class="back icon-btn" id="examQuit" title="Abandon run">✕</button>
+      <div class="play-title">🐉 Final Boss</div>
+      <div class="play-hud"><div class="hud-box ${examTimeLeft() < 10 * 60000 ? 'time-low' : ''}" id="examTimer">${fmtClock(examTimeLeft())}</div></div>
+    </div>
+    <div class="exam-sub">
+      <span class="chip">Q ${i + 1} / ${run.qids.length}</span>
+      <span class="chip">${answered} answered</span>
+      <button class="chip chip-btn ${run.flags[i] ? 'flag-on' : ''}" id="examFlag">🚩 ${run.flags[i] ? 'Flagged' : 'Flag'}</button>
+      <button class="chip chip-btn" id="examMap">🗺️ Map</button>
+    </div>
+    <div class="q-text">${esc(q.question)}</div>
+    <div id="examOpts">${order.map((oi, k) => `
+      <button class="opt exam-opt ${run.answers[i] === oi ? 'selected' : ''} ${run.struck[i].includes(oi) ? 'struck' : ''}" data-oi="${oi}">
+        <span class="opt-key">${'ABC'[k]}</span>${esc(q.options[oi])}
+        <span class="strike-btn" title="Strike out">✂️</span>
+      </button>`).join('')}</div>
+    <div class="exam-nav-row">
+      <button class="btn btn-ghost" id="examPrev" ${i === 0 ? 'disabled' : ''}>‹ Prev</button>
+      <button class="btn btn-primary" id="examNext">${last ? '🗺️ Review & Submit' : 'Next ›'}</button>
+    </div>`;
+
+  $('#examQuit').onclick = () => {
+    if (confirm('Abandon the boss fight? Progress is discarded (no attempt recorded).')) {
+      S.boss.run = null; saveState(); navigate('arcade');
+    }
+  };
+  $('#examFlag').onclick = () => { run.flags[i] = !run.flags[i]; saveState(); renderExamQuestion(); };
+  $('#examMap').onclick = () => { beep('click'); renderExamMap(); };
+  $('#examPrev').onclick = () => { if (i > 0) { beep('click'); run.idx--; saveState(); renderExamQuestion(); } };
+  $('#examNext').onclick = () => { beep('click'); if (last) renderExamMap(); else { run.idx++; saveState(); renderExamQuestion(); } };
+  v.querySelectorAll('.exam-opt').forEach(b => {
+    const oi = +b.dataset.oi;
+    b.querySelector('.strike-btn').onclick = e => {
+      e.stopPropagation();
+      const s = run.struck[i], at = s.indexOf(oi);
+      if (at >= 0) s.splice(at, 1);
+      else { s.push(oi); if (run.answers[i] === oi) run.answers[i] = null; }
+      saveState(); renderExamQuestion();
+    };
+    b.onclick = () => {
+      beep('click');
+      run.answers[i] = oi;
+      const s = run.struck[i], at = s.indexOf(oi);
+      if (at >= 0) s.splice(at, 1);
+      saveState(); renderExamQuestion();
+    };
+  });
+}
+
+function renderExamMap() {
+  const v = $('#view-exam');
+  const run = S.boss.run;
+  const blank = run.answers.filter(a => a === null).length;
+  v.innerHTML = `
+    <div class="play-head">
+      <button class="back icon-btn" id="mapBack">‹</button>
+      <div class="play-title">🗺️ Question Map</div>
+      <div class="play-hud"><div class="hud-box ${examTimeLeft() < 10 * 60000 ? 'time-low' : ''}" id="examTimer">${fmtClock(examTimeLeft())}</div></div>
+    </div>
+    <div class="section-sub">Tap a question to jump. ${blank ? blank + ' unanswered.' : 'All answered!'} 🚩 = flagged for review.</div>
+    <div class="enav-grid">${run.qids.map((_, k) => `
+      <button class="enav-cell ${run.answers[k] !== null ? 'answered' : ''} ${run.flags[k] ? 'flagged' : ''} ${k === run.idx ? 'cur' : ''}" data-k="${k}">${run.flags[k] ? '🚩' : k + 1}</button>`).join('')}</div>
+    <button class="btn btn-primary btn-big" id="examSubmit">⚖️ Submit for Grading${blank ? ` (${blank} blank)` : ''}</button>`;
+  $('#mapBack').onclick = () => { beep('click'); renderExamQuestion(); };
+  v.querySelectorAll('.enav-cell').forEach(b => b.onclick = () => { run.idx = +b.dataset.k; saveState(); renderExamQuestion(); });
+  $('#examSubmit').onclick = () => {
+    const n = run.answers.filter(a => a === null).length;
+    if (n && !confirm(`${n} question${n === 1 ? ' is' : 's are'} blank and will count as wrong. Submit anyway?`)) return;
+    finishExam(false);
+  };
+}
+
+function finishExam(timeUp) {
+  const run = S.boss.run;
+  if (!run) return;
+  cleanup();
+  const elapsed = Math.min(EXAM_MIN * 60000, Date.now() - run.start);
+  let score = 0; const perDom = {}; const missed = [];
+  run.qids.forEach((id, k) => {
+    const q = qById(id);
+    const ok = run.answers[k] === q.correctAnswer;
+    const pd = perDom[q.domain] || (perDom[q.domain] = { c: 0, n: 0 });
+    pd.n++;
+    const st = qstat(q.id); st.s++; st.last = Date.now();
+    if (ok) { score++; pd.c++; st.c++; st.lw = false; S.counters.correct++; if (q.domain === 6) S.counters.d6correct++; }
+    else { st.w++; st.lw = true; S.counters.wrong++; missed.push({ q, picked: run.answers[k] }); }
+  });
+  const passed = score >= EXAM_PASS;
+  S.boss.attempts++;
+  S.boss.best = Math.max(S.boss.best, score);
+  if (passed) S.boss.passed = true;
+  S.boss.run = null;
+  markActivity();
+  addXp(score + (passed ? 100 : 25), passed ? '🐉 BOSS DEFEATED' : 'Boss attempt');
+  checkAchievements();
+  saveState();
+  if (passed) confettiBurst();
+  renderExamResults({ score, perDom, missed, timeUp, passed, elapsed });
+}
+
+function renderExamResults(r) {
+  const v = $('#view-exam');
+  const mins = Math.round(r.elapsed / 60000);
+  const domRows = Object.keys(DOMAINS).filter(d => r.perDom[d]).map(d => {
+    const pd = r.perDom[d];
+    const pct = Math.round(pd.c / pd.n * 100);
+    return `<div class="card exam-dom-row">
+      <span>${DOMAINS[d].emoji} ${esc(DOMAINS[d].short)}</span>
+      <span class="${pct >= 77 ? 'good' : 'bad'}">${pd.c}/${pd.n} · ${pct}%</span></div>`;
+  }).join('');
+  v.innerHTML = `
+    <div class="result-screen">
+      <div class="result-big">${r.passed ? '👑' : '🐉'}</div>
+      <div class="result-score">${r.score} / 100</div>
+      <div class="boss-verdict ${r.passed ? 'pass' : 'fail'}">${r.passed ? 'PASS — the Boss falls!' : 'The Boss survives… this time.'}</div>
+      <div class="result-line">${EXAM_PASS} to pass · ${mins} min used${r.timeUp ? ' · ⏰ time expired' : ''}</div>
+      <div class="result-line">Attempts: ${S.boss.attempts} · Best: ${S.boss.best}/100</div>
+    </div>
+    <div class="section-title">📊 The Court's Scoring</div>
+    ${domRows}
+    ${r.missed.length ? `<div class="section-title">❌ The ${r.missed.length} that got away</div>` +
+      r.missed.map(m => `<div class="card exam-miss">
+        <div class="q-meta"><span class="chip dom">${DOMAINS[m.q.domain].emoji} ${esc(m.q.subtopic)}</span></div>
+        <div class="q-text" style="font-size:.92rem">${esc(m.q.question)}</div>
+        <div class="miss-row bad">✗ Your answer: ${m.picked === null ? '(left blank)' : esc(m.q.options[m.picked])}</div>
+        <div class="miss-row good">✓ Correct: ${esc(m.q.options[m.q.correctAnswer])}</div>
+        <div class="expl-box">${esc(m.q.explanation)}</div>
+      </div>`).join('') : '<div class="card" style="text-align:center">💯 A perfect run. Absurd. Go take the real one.</div>'}
+    <div style="display:flex; gap:10px; justify-content:center; margin:18px 0; flex-wrap:wrap">
+      <button class="btn btn-ghost" id="examHome">Home</button>
+      <button class="btn btn-primary" id="examAgain">⚔️ Rematch</button>
+    </div>`;
+  $('#examHome').onclick = () => { beep('click'); navigate('home'); };
+  $('#examAgain').onclick = () => { beep('click'); S.boss.run = newBossRun(); saveState(); navigate('exam'); };
+  window.scrollTo({ top: 0 });
+}
 
 /* ============================================================
    VIEW: MASTERY
@@ -1368,6 +1604,14 @@ function mergeStates(a, b) {
   out.arcade.termmatch.wins = Math.max(a.arcade.termmatch.wins, ba.termmatch && ba.termmatch.wins || 0);
   const bms = ba.termmatch && ba.termmatch.bestMs || 0;
   out.arcade.termmatch.bestMs = (a.arcade.termmatch.bestMs && bms) ? Math.min(a.arcade.termmatch.bestMs, bms) : (a.arcade.termmatch.bestMs || bms);
+  // boss: max attempts/best, passed sticks; an in-progress run stays local-only
+  const ab = a.boss || {}, bb = b.boss || {};
+  out.boss = {
+    attempts: Math.max(ab.attempts || 0, bb.attempts || 0),
+    best: Math.max(ab.best || 0, bb.best || 0),
+    passed: !!(ab.passed || bb.passed),
+    run: ab.run || null
+  };
   // achievements union (earliest)
   out.ach = Object.assign({}, b.ach, a.ach);
   // counters: take max of each
@@ -1388,8 +1632,8 @@ function mergeStates(a, b) {
 document.addEventListener('keydown', e => {
   if (e.target.matches('input, textarea, select')) return;
   const key = e.key.toLowerCase();
-  const optWrap = $('#playOpts') || $('#caseOpts');
-  if (optWrap && (activeView === 'play' || activeView === 'case')) {
+  const optWrap = $('#playOpts') || $('#caseOpts') || $('#examOpts');
+  if (optWrap && (activeView === 'play' || activeView === 'case' || activeView === 'exam')) {
     const opts = [...optWrap.querySelectorAll('.opt:not(:disabled)')];
     if (opts.length) {
       let idx = -1;
@@ -1399,7 +1643,7 @@ document.addEventListener('keydown', e => {
     }
   }
   if (key === 'enter' || key === ' ') {
-    const next = $('#playNext') || $('#caseNext');
+    const next = $('#playNext') || $('#caseNext') || (activeView === 'exam' ? $('#examNext') : null);
     if (next) { next.click(); e.preventDefault(); }
   }
 });
