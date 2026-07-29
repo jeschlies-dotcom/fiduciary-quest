@@ -108,6 +108,7 @@ function defaultState() {
     qstats: {},          // qid -> {s:seen, c:correct, w:wrong, last:ts, lw:lastWrong(bool)}
     cases: {},           // caseId -> {stage, picks:[], rep, risk, done, bestGrade, flawless}
     arcade: { lightning: { best: 0, plays: 0 }, survival: { best: 0, plays: 0 }, bettercall: { best: 0, plays: 0 }, termmatch: { bestMs: 0, wins: 0 } },
+    tmSeen: {},          // glossary term -> times featured in Term Match (knockout rotation)
     boss: { attempts: 0, best: 0, passed: false, run: null },
     dailies: { date: '', quests: [] },
     ach: {},             // achId -> ts
@@ -195,8 +196,23 @@ function confettiBurst() {
 
 /* ---------------- Question stats / smart picker ---------------- */
 function qstat(qid) { return S.qstats[qid] || (S.qstats[qid] = { s: 0, c: 0, w: 0, last: 0, lw: false }); }
+function seenCount(qid) { const st = S.qstats[qid]; return st && st.s || 0; }
 function isReview(qid) { const st = S.qstats[qid]; return !!st && (st.lw || st.w > st.c); }
 function reviewPool() { return QUESTIONS.filter(q => isReview(q.id)); }
+
+/* Knockout rotation: within each domain, only questions tied for the LOWEST
+   seen-count are eligible, so no question repeats until every question in its
+   category has been asked. Derived from qstats (already synced), so history
+   from before this feature counts. Computed against the already-filtered pool
+   so a difficulty/domain filter can never strand an empty pool. */
+function knockoutFilter(pool) {
+  const minByDom = {};
+  pool.forEach(q => {
+    const s = seenCount(q.id);
+    if (!(q.domain in minByDom) || s < minByDom[q.domain]) minByDom[q.domain] = s;
+  });
+  return pool.filter(q => seenCount(q.id) === minByDom[q.domain]);
+}
 
 function recordAnswer(q, correct) {
   const st = qstat(q.id);
@@ -217,6 +233,7 @@ function pickQuestions(n, opts = {}) {
   if (opts.domains && opts.domains.length) pool = pool.filter(q => opts.domains.includes(q.domain));
   if (opts.difficulty) pool = pool.filter(q => q.difficulty === opts.difficulty);
   if (opts.review) pool = pool.filter(q => isReview(q.id));
+  else pool = knockoutFilter(pool);   // review mode repeats by design
   const weighted = pool.map(q => {
     const st = S.qstats[q.id];
     const domW = (DOMAINS[q.domain] ? DOMAINS[q.domain].weight : 10) / 10;
@@ -979,7 +996,13 @@ function endPlay(quit = false) {
    ============================================================ */
 renderers.termmatch = function () {
   const v = $('#view-termmatch');
-  const pairs = shuffle(GLOSSARY.terms).slice(0, 8);
+  // Knockout rotation: least-featured terms first (random tiebreak), so every
+  // term appears before any repeats.
+  const pairs = shuffle(GLOSSARY.terms)
+    .sort((a, b) => (S.tmSeen[a.t] || 0) - (S.tmSeen[b.t] || 0))
+    .slice(0, 8);
+  pairs.forEach(p => { S.tmSeen[p.t] = (S.tmSeen[p.t] || 0) + 1; });
+  saveState();
   const tiles = shuffle([
     ...pairs.map((p, i) => ({ kind: 'term', pair: i, txt: p.t })),
     ...pairs.map((p, i) => ({ kind: 'def', pair: i, txt: p.d.length > 110 ? p.d.slice(0, 107) + '…' : p.d }))
@@ -1057,8 +1080,12 @@ const EXAM_PASS = 77;
 const qById = id => QUESTIONS.find(q => q.id === id);
 
 function newBossRun() {
+  // Least-seen questions first (random tiebreak via shuffle + stable sort):
+  // successive boss attempts knock out served questions until a domain cycles.
   const ids = shuffle(Object.entries(EXAM_BLUEPRINT).flatMap(([d, n]) =>
-    shuffle(QUESTIONS.filter(q => q.domain === +d)).slice(0, n).map(q => q.id)));
+    shuffle(QUESTIONS.filter(q => q.domain === +d))
+      .sort((a, b) => seenCount(a.id) - seenCount(b.id))
+      .slice(0, n).map(q => q.id)));
   return {
     qids: ids,
     optOrder: ids.map(id => shuffle(qById(id).options.map((_, i) => i))),
@@ -1612,6 +1639,9 @@ function mergeStates(a, b) {
     passed: !!(ab.passed || bb.passed),
     run: ab.run || null
   };
+  // term-match rotation counts: max per term
+  out.tmSeen = Object.assign({}, a.tmSeen);
+  Object.entries(b.tmSeen || {}).forEach(([k, n]) => { out.tmSeen[k] = Math.max(out.tmSeen[k] || 0, n || 0); });
   // achievements union (earliest)
   out.ach = Object.assign({}, b.ach, a.ach);
   // counters: take max of each
