@@ -1,68 +1,302 @@
 {
-  "terms": [
-    { "t": "Advance Directive / AHCD", "d": "Written instruction (living will or DPAHC) guiding care when individual is terminally ill, incapacitated, or unable to communicate wishes.", "dom": 7 },
-    { "t": "ABLE Account", "d": "Tax-advantaged savings for individuals with disabilities (onset before age 46 as of 2026); no ISM penalty for food/shelter paid from the account; up to $100,000 excluded from SSI resource limit.", "dom": 6 },
-    { "t": "ADLs", "d": "Activities of Daily Living — self-care tasks: bathing, dressing, eating, toileting, transferring, continence.", "dom": 5 },
-    { "t": "Attorney-in-Fact", "d": "Agent under a power of attorney (identical to \"agent under POA\").", "dom": 4 },
-    { "t": "Best Interest Standard", "d": "Objective decision-making standard: what a reasonable person would do. Used when substituted judgment is unavailable.", "dom": 3 },
-    { "t": "Blocked Account", "d": "Bank or brokerage account requiring court authorization for withdrawals; allows smaller or no bond.", "dom": 6 },
-    { "t": "Bond", "d": "Insurance requirement guaranteeing proper fiduciary performance; amount based on estate value.", "dom": 6 },
-    { "t": "Capacity", "d": "Legal qualification and competency; ability to understand the nature and effects of one's acts.", "dom": 3 },
-    { "t": "CSRA", "d": "Community Spouse Resource Allowance — assets the non-institutionalized spouse may retain when the other spouse qualifies for Medi-Cal SNF or HCBS coverage ($162,660 in 2026).", "dom": 6 },
-    { "t": "DAC", "d": "Disabled Adult Child — SSA benefits category for adult children with disabilities.", "dom": 6 },
-    { "t": "Deeming", "d": "SSA process of attributing parents' or spouse's income/assets to an SSI-eligible individual (irrebuttable presumption).", "dom": 6 },
-    { "t": "Dementia", "d": "Category of disorders with multiple cognitive deficits including memory impairment.", "dom": 2 },
-    { "t": "Developmental Disability", "d": "Severe, chronic disability manifested before age 22; substantial limitations in 3+ major life activities.", "dom": 2 },
-    { "t": "DNR", "d": "Do Not Resuscitate — order to not perform CPR. Does NOT mean \"do not treat.\"", "dom": 7 },
-    { "t": "DPAHC", "d": "Durable Power of Attorney for Health Care — advance directive designating an agent for healthcare decisions; survives incapacity.", "dom": 7 },
-    { "t": "Ethnocentrism", "d": "Judging other cultures as inferior to one's own.", "dom": 2 },
-    { "t": "Exploitation", "d": "Improper or illegal use of a person's funds, resources, or assets.", "dom": 5 },
-    { "t": "Form 56", "d": "IRS Notice of Fiduciary Relationship; filed with first tax return, not annually.", "dom": 6 },
-    { "t": "Functional Assessment", "d": "Diagnostic tool measuring overall well-being and ability to function in multidimensional situations.", "dom": 3 },
-    { "t": "Guardian Ad Litem", "d": "Person appointed by court to make an impartial inquiry and report.", "dom": 4 },
-    { "t": "IADLs", "d": "Instrumental Activities of Daily Living — complex tasks: managing finances, shopping, cooking, housekeeping, using transportation.", "dom": 5 },
-    { "t": "IHSS", "d": "In-Home Supportive Services — Medi-Cal program paying for in-home care; max 283 hours.", "dom": 5 },
-    { "t": "IMD", "d": "Institute for Mental Disease — long-term locked facility for mentally ill; subcategory of SNF.", "dom": 2 },
-    { "t": "Informed Consent", "d": "Agreement made with knowledge of risks, benefits, and alternatives.", "dom": 3 },
-    { "t": "ISM", "d": "In-Kind Support and Maintenance — SSI term for shelter provided to a beneficiary; triggers benefit reduction. Since 9/30/2024 only shelter (not food) counts.", "dom": 6 },
-    { "t": "Continuing Education (CLPF)", "d": "Licensed fiduciaries must complete 15 hours of continuing education each year to renew. A favorite exam question.", "dom": 1 },
-    { "t": "Liquid Assets", "d": "Assets readily convertible to cash: savings/checking accounts, CDs, money market and mutual funds. Real estate, collectibles, and stamps are NOT liquid.", "dom": 6 },
-    { "t": "Supported Decision-Making", "d": "Helping a person make their own decisions with assistance (advisors, tools, trusted supporters) instead of substituting a decision for them — a less restrictive alternative.", "dom": 3 },
-    { "t": "Least Restrictive Alternative", "d": "Setting placing the fewest limits on rights and freedoms while meeting the person's needs.", "dom": 3 },
-    { "t": "Letters of Conservatorship", "d": "Court document evidencing appointment and authority; must be recently certified (within 60 days).", "dom": 4 },
-    { "t": "Limited Conservatorship", "d": "For adults with developmental disabilities; only specific powers granted by the court.", "dom": 4 },
-    { "t": "LPS Conservatorship", "d": "Lanterman-Petris-Short Act conservatorship for grave disability due to mental illness, severe substance use disorder, or co-occurring conditions (expanded by SB 43); only the county can petition.", "dom": 2 },
-    { "t": "Medicaid Payback", "d": "Requirement in first-party SNTs that remaining trust funds reimburse Medicaid upon beneficiary's death.", "dom": 6 },
-    { "t": "Modern Portfolio Theory", "d": "Investment framework weighing risks and rewards across diversified holdings.", "dom": 6 },
-    { "t": "Oath of Office", "d": "Legal document signed by guardian pledging to carry out obligations properly.", "dom": 4 },
-    { "t": "Parens Patriae", "d": "Legal principle allowing the state to determine what's in an individual's best interests.", "dom": 4 },
-    { "t": "PMV", "d": "Presumed Maximum Value — SSI calculation for ISM penalty: one-third of the federal benefit rate plus $20 ($351.33/month in 2026).", "dom": 6 },
-    { "t": "Probate Referee", "d": "Court-appointed appraiser for estate assets.", "dom": 6 },
-    { "t": "Prudent Investor Rule", "d": "Evaluate the portfolio as a whole; diversify; consider risk tolerance and constraints. Default standard under Probate Code §16046(a).", "dom": 6 },
-    { "t": "Prudent Person Rule", "d": "Older standard evaluating each investment individually for reasonableness.", "dom": 6 },
-    { "t": "RCFE", "d": "Residential Care Facility for the Elderly (Assisted Living).", "dom": 5 },
-    { "t": "Regional Center", "d": "Nonprofit serving individuals with developmental disabilities under the Lanterman Act; no income/asset test; payer of last resort.", "dom": 5 },
-    { "t": "Representative Payee", "d": "Person/entity named by a government agency to receive benefits on behalf of a beneficiary.", "dom": 6 },
-    { "t": "Self-Determination", "d": "Doctrine that actions are determined by the person; free choice without external force.", "dom": 3 },
-    { "t": "SNF", "d": "Skilled Nursing Facility.", "dom": 5 },
-    { "t": "Standby Guardian", "d": "Person whose appointment becomes effective upon the initially appointed guardian's death, incapacity, resignation, or temporary absence.", "dom": 1 },
-    { "t": "Substituted Judgment", "d": "Decision-making based on what the incapacitated person would have wanted, using their known prior wishes.", "dom": 3 },
-    { "t": "VTR", "d": "Value of One-Third Reduction — SSI reduction when living in another's household receiving all meals plus shelter; one-third of FBR ($331.33/month in 2026).", "dom": 6 }
-  ],
-  "timelines": [
-    { "p": "5 days", "r": "Advance notice required for a temporary conservatorship hearing" },
-    { "p": "24 hours", "r": "File request if a temporary conservator makes an emergency move" },
-    { "p": "60 days", "r": "File Level-of-Care Determination after appointment" },
-    { "p": "Within 60 days", "r": "Letters of Conservatorship must be recently certified" },
-    { "p": "60 days prior", "r": "Annual Statement filing deadline before license expiration" },
-    { "p": "90 days", "r": "File Inventory & Appraisal after appointment" },
-    { "p": "90 days + I&A filed", "r": "Earliest point fees may be requested after appointment" },
-    { "p": "6 months", "r": "Real property must be reappraised if appraisal is older than this before sale" },
-    { "p": "1 year", "r": "First accounting due" },
-    { "p": "Within 1 year prior", "r": "Notice of Intent to Sell must be published before sale" },
-    { "p": "Up to 2 years", "r": "Subsequent accounting periods" },
-    { "p": "3 years", "r": "IRS standard audit statute; Probate Code §16460 breach claims" },
-    { "p": "6 years", "r": "IRS extended audit statute (omitted >25% gross income)" },
-    { "p": "10 years", "r": "IRS assessment collection statute" }
-  ]
+ "terms": [
+  {
+   "t": "Advance Directive / AHCD",
+   "d": "Written instruction (living will or DPAHC) guiding care when individual is terminally ill, incapacitated, or unable to communicate wishes.",
+   "dom": 7
+  },
+  {
+   "t": "ABLE Account",
+   "d": "Tax-advantaged savings for individuals with disabilities (onset before age 46 as of 2026); no ISM penalty for food/shelter paid from the account; up to $100,000 excluded from SSI resource limit.",
+   "dom": 6
+  },
+  {
+   "t": "ADLs",
+   "d": "Activities of Daily Living — self-care tasks: bathing, dressing, eating, toileting, transferring, continence.",
+   "dom": 5
+  },
+  {
+   "t": "Attorney-in-Fact",
+   "d": "Agent under a power of attorney (identical to \"agent under POA\").",
+   "dom": 4
+  },
+  {
+   "t": "Best Interest Standard",
+   "d": "Objective decision-making standard: what a reasonable person would do. Used when substituted judgment is unavailable.",
+   "dom": 3
+  },
+  {
+   "t": "Blocked Account",
+   "d": "Bank or brokerage account requiring court authorization for withdrawals; allows smaller or no bond.",
+   "dom": 6
+  },
+  {
+   "t": "Bond",
+   "d": "Insurance requirement guaranteeing proper fiduciary performance; amount based on estate value.",
+   "dom": 6
+  },
+  {
+   "t": "Capacity",
+   "d": "Legal qualification and competency; ability to understand the nature and effects of one's acts.",
+   "dom": 3
+  },
+  {
+   "t": "CSRA",
+   "d": "Community Spouse Resource Allowance — assets the non-institutionalized spouse may retain when the other spouse qualifies for Medi-Cal SNF or HCBS coverage ($162,660 in 2026).",
+   "dom": 6
+  },
+  {
+   "t": "DAC",
+   "d": "Disabled Adult Child — SSA benefits category for adult children with disabilities.",
+   "dom": 6
+  },
+  {
+   "t": "Deeming",
+   "d": "SSA process of attributing parents' or spouse's income/assets to an SSI-eligible individual (irrebuttable presumption).",
+   "dom": 6
+  },
+  {
+   "t": "Dementia",
+   "d": "Category of disorders with multiple cognitive deficits including memory impairment.",
+   "dom": 2
+  },
+  {
+   "t": "Developmental Disability",
+   "d": "Severe, chronic disability manifested before age 18 under California's Lanterman Act (WIC §4512); substantial limitations in 3+ of 7 major life activities. (The federal DD Act uses age 22 — CA exam answer is 18.)",
+   "dom": 2
+  },
+  {
+   "t": "DNR",
+   "d": "Do Not Resuscitate — order to not perform CPR. Does NOT mean \"do not treat.\"",
+   "dom": 7
+  },
+  {
+   "t": "DPAHC",
+   "d": "Durable Power of Attorney for Health Care — advance directive designating an agent for healthcare decisions; survives incapacity.",
+   "dom": 7
+  },
+  {
+   "t": "Ethnocentrism",
+   "d": "Judging other cultures as inferior to one's own.",
+   "dom": 2
+  },
+  {
+   "t": "Exploitation",
+   "d": "Improper or illegal use of a person's funds, resources, or assets.",
+   "dom": 5
+  },
+  {
+   "t": "Form 56",
+   "d": "IRS Notice Concerning Fiduciary Relationship — filed when the relationship is created (and again at termination) so IRS notices reach the fiduciary. Distinct from Form 4810, the request for prompt assessment that shortens the IRS assessment window to 18 months.",
+   "dom": 6
+  },
+  {
+   "t": "Functional Assessment",
+   "d": "Diagnostic tool measuring overall well-being and ability to function in multidimensional situations.",
+   "dom": 3
+  },
+  {
+   "t": "Guardian Ad Litem",
+   "d": "Person appointed by court to make an impartial inquiry and report.",
+   "dom": 4
+  },
+  {
+   "t": "IADLs",
+   "d": "Instrumental Activities of Daily Living — complex tasks: managing finances, shopping, cooking, housekeeping, using transportation.",
+   "dom": 5
+  },
+  {
+   "t": "IHSS",
+   "d": "In-Home Supportive Services — Medi-Cal program paying for in-home care; max 283 hours/month (severely impaired) or 195 hours (non-severely impaired).",
+   "dom": 5
+  },
+  {
+   "t": "IMD",
+   "d": "Institute for Mental Disease — long-term locked facility for mentally ill; subcategory of SNF.",
+   "dom": 2
+  },
+  {
+   "t": "Informed Consent",
+   "d": "Agreement made with knowledge of risks, benefits, and alternatives.",
+   "dom": 3
+  },
+  {
+   "t": "ISM",
+   "d": "In-Kind Support and Maintenance — SSI term for shelter provided to a beneficiary; triggers benefit reduction. Since 9/30/2024 only shelter (not food) counts.",
+   "dom": 6
+  },
+  {
+   "t": "Continuing Education (CLPF)",
+   "d": "Licensed fiduciaries must complete 15 hours of continuing education each year to renew — including at least 2 hours of ethics and/or cultural competency. A favorite exam question.",
+   "dom": 1
+  },
+  {
+   "t": "Liquid Assets",
+   "d": "Assets readily convertible to cash: savings/checking accounts, CDs, money market and mutual funds. Real estate, collectibles, and stamps are NOT liquid.",
+   "dom": 6
+  },
+  {
+   "t": "Supported Decision-Making",
+   "d": "Helping a person make their own decisions with assistance (advisors, tools, trusted supporters) instead of substituting a decision for them — a less restrictive alternative.",
+   "dom": 3
+  },
+  {
+   "t": "Least Restrictive Alternative",
+   "d": "Setting placing the fewest limits on rights and freedoms while meeting the person's needs.",
+   "dom": 3
+  },
+  {
+   "t": "Letters of Conservatorship",
+   "d": "Court document evidencing appointment and authority; must be recently certified (within 60 days).",
+   "dom": 4
+  },
+  {
+   "t": "Limited Conservatorship",
+   "d": "For adults with developmental disabilities; only specific powers granted by the court.",
+   "dom": 4
+  },
+  {
+   "t": "LPS Conservatorship",
+   "d": "Lanterman-Petris-Short Act conservatorship for grave disability due to mental illness, severe substance use disorder, or co-occurring conditions (expanded by SB 43); only the county can petition.",
+   "dom": 2
+  },
+  {
+   "t": "Medicaid Payback",
+   "d": "Requirement in first-party SNTs that remaining trust funds reimburse Medicaid upon beneficiary's death.",
+   "dom": 6
+  },
+  {
+   "t": "Modern Portfolio Theory",
+   "d": "Investment framework weighing risks and rewards across diversified holdings.",
+   "dom": 6
+  },
+  {
+   "t": "Oath of Office",
+   "d": "Legal document signed by guardian pledging to carry out obligations properly.",
+   "dom": 4
+  },
+  {
+   "t": "Parens Patriae",
+   "d": "Legal principle allowing the state to determine what's in an individual's best interests.",
+   "dom": 4
+  },
+  {
+   "t": "PMV",
+   "d": "Presumed Maximum Value — rebuttable cap for shelter ISM outside the VTR situation: one-third of FBR plus $20 ($351.33/month in 2026). Recipient can rebut by showing actual value is lower.",
+   "dom": 6
+  },
+  {
+   "t": "Probate Referee",
+   "d": "Court-appointed appraiser for estate assets.",
+   "dom": 6
+  },
+  {
+   "t": "Prudent Investor Rule",
+   "d": "Evaluate the portfolio as a whole; diversify; consider risk tolerance and constraints. Default standard under Probate Code §16046(a).",
+   "dom": 6
+  },
+  {
+   "t": "Prudent Person Rule",
+   "d": "Older standard evaluating each investment individually for reasonableness.",
+   "dom": 6
+  },
+  {
+   "t": "RCFE",
+   "d": "Residential Care Facility for the Elderly (Assisted Living).",
+   "dom": 5
+  },
+  {
+   "t": "Regional Center",
+   "d": "Nonprofit serving individuals with developmental disabilities under the Lanterman Act; no income/asset test; payer of last resort.",
+   "dom": 5
+  },
+  {
+   "t": "Representative Payee",
+   "d": "Person/entity named by a government agency to receive benefits on behalf of a beneficiary.",
+   "dom": 6
+  },
+  {
+   "t": "Self-Determination",
+   "d": "Doctrine that actions are determined by the person; free choice without external force.",
+   "dom": 3
+  },
+  {
+   "t": "SNF",
+   "d": "Skilled Nursing Facility.",
+   "dom": 5
+  },
+  {
+   "t": "Standby Guardian",
+   "d": "Person whose appointment becomes effective upon the initially appointed guardian's death, incapacity, resignation, or temporary absence.",
+   "dom": 1
+  },
+  {
+   "t": "Substituted Judgment",
+   "d": "Decision-making based on what the incapacitated person would have wanted, using their known prior wishes.",
+   "dom": 3
+  },
+  {
+   "t": "VTR",
+   "d": "Value of One-Third Reduction — flat SSI reduction (one-third of FBR; $331.33/month in 2026) applying only when a recipient lives a full month in another's household, receives shelter without paying a pro-rata share, AND household members provide ALL meals. Anything less → PMV instead.",
+   "dom": 6
+  }
+ ],
+ "timelines": [
+  {
+   "p": "5 court days",
+   "r": "Advance notice (with copy of petition) required for a temporary conservatorship hearing"
+  },
+  {
+   "p": "1 judicial day",
+   "r": "File the §2253 request after a temporary conservator makes an emergency move (Prob. Code §2254)"
+  },
+  {
+   "p": "120 days",
+   "r": "File the Care Plan after appointment — level of care is determined at appointment and included in it (SB 280, eff. 2025; replaced the old 60-day determination)"
+  },
+  {
+   "p": "Within 60 days",
+   "r": "Letters of Conservatorship must be recently certified"
+  },
+  {
+   "p": "60 days prior",
+   "r": "Annual Statement filing deadline before license expiration"
+  },
+  {
+   "p": "90 days",
+   "r": "File Inventory & Appraisal after appointment"
+  },
+  {
+   "p": "90 days + I&A filed",
+   "r": "Earliest point fees may be requested after appointment"
+  },
+  {
+   "p": "6 months",
+   "r": "Reappraisal window for selling the conservatee's PERSONAL RESIDENCE (§2543(c)); other estate property uses a 1-year appraisal window (§10309)"
+  },
+  {
+   "p": "1 year",
+   "r": "First accounting due"
+  },
+  {
+   "p": "Before the sale date",
+   "r": "Notice of sale must be published in a newspaper (no fixed window — publication simply precedes the sale; §10300)"
+  },
+  {
+   "p": "Up to 2 years",
+   "r": "Subsequent accounting periods"
+  },
+  {
+   "p": "3 years",
+   "r": "IRS standard audit statute; Probate Code §16460 breach claims"
+  },
+  {
+   "p": "6 years",
+   "r": "IRS extended audit statute (omitted >25% gross income)"
+  },
+  {
+   "p": "10 years",
+   "r": "IRS assessment collection statute"
+  }
+ ]
 }
